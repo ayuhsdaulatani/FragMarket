@@ -1,6 +1,6 @@
 import { BrowserProvider } from "ethers";
 import { useCallback, useEffect, useState } from "react";
-import { SEPOLIA_CHAIN_ID_HEX, SEPOLIA_DISPLAY } from "../lib/chain";
+import { TARGET_CHAIN_DISPLAY, TARGET_CHAIN_ID_HEX } from "../lib/chain";
 
 type Props = {
   address: string | null;
@@ -12,27 +12,34 @@ function shortenAddress(addr: string): string {
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 }
 
-async function ensureSepolia(ethereum: NonNullable<Window["ethereum"]>): Promise<void> {
+async function ensureTargetChain(ethereum: NonNullable<Window["ethereum"]>): Promise<void> {
   try {
     await ethereum.request({
       method: "wallet_switchEthereumChain",
-      params: [{ chainId: SEPOLIA_CHAIN_ID_HEX }],
+      params: [{ chainId: TARGET_CHAIN_ID_HEX }],
     });
   } catch (err: unknown) {
     const code =
       err && typeof err === "object" && "code" in err ? (err as { code: number }).code : null;
     if (code === 4902) {
-      await ethereum.request({
-        method: "wallet_addEthereumChain",
-        params: [
-          {
-            chainId: SEPOLIA_CHAIN_ID_HEX,
+      const isLocal = TARGET_CHAIN_ID_HEX === "0x7a69";
+      const chain = isLocal
+        ? {
+            chainId: TARGET_CHAIN_ID_HEX,
+            chainName: "Hardhat Local",
+            nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+            rpcUrls: ["http://127.0.0.1:8545"],
+          }
+        : {
+            chainId: TARGET_CHAIN_ID_HEX,
             chainName: "Sepolia",
             nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
             rpcUrls: ["https://rpc.sepolia.org"],
             blockExplorerUrls: ["https://sepolia.etherscan.io"],
-          },
-        ],
+          };
+      await ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [chain],
       });
       return;
     }
@@ -81,7 +88,7 @@ export function ConnectWallet({ address, onAddressChange, onProviderChange }: Pr
     }
     setBusy(true);
     try {
-      await ensureSepolia(window.ethereum);
+      await ensureTargetChain(window.ethereum);
       await window.ethereum.request({ method: "eth_requestAccounts", params: [] });
       const provider = new BrowserProvider(window.ethereum);
       onProviderChange(provider);
@@ -100,7 +107,7 @@ export function ConnectWallet({ address, onAddressChange, onProviderChange }: Pr
     <section className="panel connect-panel">
       <header className="panel-header">
         <h2>Wallet</h2>
-        <span className="badge">{SEPOLIA_DISPLAY}</span>
+        <span className="badge">{TARGET_CHAIN_DISPLAY}</span>
       </header>
       {!address ? (
         <button type="button" className="btn primary glow" onClick={connect} disabled={busy}>
@@ -108,7 +115,7 @@ export function ConnectWallet({ address, onAddressChange, onProviderChange }: Pr
         </button>
       ) : (
         <div className="wallet-connected">
-          <p className="label">Sepolia address</p>
+          <p className="label">Connected address</p>
           <p className="mono address-full">{address}</p>
           <p className="hint subtle">Short: {shortenAddress(address)}</p>
         </div>

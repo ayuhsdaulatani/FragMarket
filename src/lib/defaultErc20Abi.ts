@@ -1,6 +1,3 @@
-/**
- * Minimal ERC-20 ABI for balance + decimals when the user leaves ABI empty.
- */
 export const DEFAULT_ERC20_ABI = [
   {
     inputs: [{ name: "account", type: "address" }],
@@ -20,6 +17,36 @@ export const DEFAULT_ERC20_ABI = [
     inputs: [],
     name: "symbol",
     outputs: [{ name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "to", type: "address" },
+      { name: "value", type: "uint256" },
+    ],
+    name: "transfer",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "value", type: "uint256" },
+    ],
+    name: "approve",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "spender", type: "address" },
+    ],
+    name: "allowance",
+    outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },

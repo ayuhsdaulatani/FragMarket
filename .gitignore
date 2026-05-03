@@ -1,6 +1,11 @@
 node_modules
 dist
+dist-hardhat
 out
 cache
+artifacts
+ignition/deployments
 .env
 *.local
+types
+*.tsbuildinfo
