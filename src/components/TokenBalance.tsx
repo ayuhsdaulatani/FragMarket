@@ -160,13 +160,6 @@ export function TokenBalance({ provider, signer, userAddress }: Props) {
         </p>
       )}
 
-      <p className="hint subtle">
-        <strong>Gas</strong> is paid in native ETH (on Sepolia that is SepoliaETH). <strong>Items</strong> are
-        paid in YODA inside the contract calls, so MetaMask may still show an ETH fee even though the price
-        is YODA. After you sign, check <strong>MetaMask → Activity</strong>. Import the token address above to
-        see YODA under Tokens.
-      </p>
-
       <button
         type="button"
         className="btn secondary"
