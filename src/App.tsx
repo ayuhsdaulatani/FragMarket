@@ -12,14 +12,14 @@ export default function App() {
   const [signer, setSigner] = useState<JsonRpcSigner | null>(null);
 
   useEffect(() => {
-    if (!provider) {
+    if (!provider || !address) {
       setSigner(null);
       return;
     }
     let cancelled = false;
     void (async () => {
       try {
-        const s = await provider.getSigner();
+        const s = await provider.getSigner(address);
         if (!cancelled) setSigner(s);
       } catch {
         if (!cancelled) setSigner(null);

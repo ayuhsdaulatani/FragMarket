@@ -27,6 +27,7 @@ export function TokenBalance({ provider, signer, userAddress }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [okMsg, setOkMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [reloadTick, setReloadTick] = useState(0);
 
   const addr = (fromEnv ?? tokenAddress).trim();
 
@@ -82,6 +83,11 @@ export function TokenBalance({ provider, signer, userAddress }: Props) {
     }
   }, [addr, provider, userAddress]);
 
+  useEffect(() => {
+    if (!provider || !userAddress || !addr || !isAddress(addr)) return;
+    void fetchBalance();
+  }, [addr, fetchBalance, provider, reloadTick, userAddress]);
+
   const sendYoda = useCallback(async () => {
     setError(null);
     setOkMsg(null);
@@ -107,7 +113,9 @@ export function TokenBalance({ provider, signer, userAddress }: Props) {
     }
     let value;
     try {
-      value = parseUnits(sendAmt.trim() || "0", 18);
+      const cRead = new Contract(addr, DEFAULT_ERC20_ABI, provider ?? signer.provider ?? signer);
+      const decimals = Number(await cRead.decimals().catch(() => 18));
+      value = parseUnits(sendAmt.trim() || "0", decimals);
     } catch {
       setError("Enter a valid amount.");
       return;
@@ -122,6 +130,7 @@ export function TokenBalance({ provider, signer, userAddress }: Props) {
       const tx = await c.transfer(to, value);
       await tx.wait();
       setSendTo("");
+      setReloadTick((v) => v + 1);
       setOkMsg("Transfer confirmed. In MetaMask open the Activity tab on this network to see the transaction.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Transfer failed.");
